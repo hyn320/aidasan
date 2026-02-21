@@ -1,3 +1,6 @@
+//これは開始画面をかくところ
+//今書いてあるコードはもとからあるやつで消しちゃいけないところがあるらしいから調べながらかいてってください
+
 import Image from "next/image";
 
 export default function Home() {
