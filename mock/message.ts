@@ -31,7 +31,7 @@ export const mockMessages: Message[] = [
     threadId: "t1",
     kind: "mediator",
     senderId: "mediator",
-    body: "Bさんから聞いたよ：『仕事が立て込んでて…でも心配させてごめんね』",
+    quotedMessageId: "m3",
     createdAt: "2026-02-21T10:03:00Z",
   },
 
