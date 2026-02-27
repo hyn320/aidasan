@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import { mockPairs } from "@/mock/pairs";
 import type { Pair } from "@/types/pair";
+import { useRouter } from "next/navigation";
 
 export function JoinView() {//参加する側の画面
 
   const [pairs, setPairs] = useState<Pair[]>(mockPairs);//ペアのデータを書き換える
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const currentUserId = "uB";
   const normalizedCode = useMemo(() => code.trim().toUpperCase(), [code]);
@@ -47,6 +49,8 @@ export function JoinView() {//参加する側の画面
         p.id === target.id ? { ...p, userBId: currentUserId } : p
       )
     );//ｐはペアの一つ一つを表す変数．
+
+     router.push("/threads/page"); 
   };
 
   return (

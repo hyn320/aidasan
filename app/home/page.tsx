@@ -8,6 +8,8 @@
 // app/home/page.tsx
 import Image from "next/image";
 import React from "react";
+import Link from "next/link";
+
 
 export default function HomePage() {
   return (
@@ -84,7 +86,6 @@ export default function HomePage() {
     width: 56,
     height: 56,
     borderRadius: "50%",
-    overflow: "hidden", 
     background: "#fff",
     boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
     overflow: "hidden",          // ← 丸く切り抜く
@@ -121,8 +122,8 @@ export default function HomePage() {
           </div>
 
           {/* メインカード + 招待 */}
-          <div style={{ marginTop: 22, display: "grid", gap: 14, justifyItems: "center" }}>
-            <button
+          <div style={{ marginTop: 22, display: "grid", gap: 14, justifyItems: "center"  }}>
+            <Link href="/mediator/select" 
               style={{
                 width: 320,
                 height: 150,
@@ -132,9 +133,8 @@ export default function HomePage() {
                 display: "grid",
                 placeContent: "center",
                 gap: 10,
-              }}
-            >
-              <button
+              }}>
+                 <div
                 style={{
                   width: 54,
                   height: 54,
@@ -145,42 +145,52 @@ export default function HomePage() {
                   fontSize: 32,
                   color: "#4d6a47",
                   lineHeight: 1,
+                  textAlign: "center",   
+                  placeItems: "center",
                 }}
               >
                 ＋
-              </button>
+              </div>
 
-              {/* 「ズレ」を半文字分右へ */}
+               {/* 「ズレ」を半文字分右へ */}
               <div
                 style={{
                   color: "#fff",
                   fontWeight: 700,
+                  textAlign: "center",   
+                  placeItems: "center",
                 }}
               >
                 ズレ
               </div>
-            </button>
+            
+            
+            </Link>
+             
 
-            <button
+             
+
+           <Link href="/pair"
               style={{
-                width: 320,
-                height: 44,
-                borderRadius: 999,
-                border: "none",
-                background: "#6c8a66",
-                color: "#fff",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              招待コードを入力
-            </button>
+              width: 320,
+              height: 44,
+              borderRadius: 999,
+              background: "#6c8a66",
+              color: "#fff",
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "grid",
+              placeItems: "center",
+            }}
+          >
+            あいださんを選ぶ
+          </Link>
           </div>
 
           {/* 通知 */}
-          <div style={{ marginTop: 32, color: "rgba(0,0,0,0.6)", fontWeight: 700 }}>
-            通知 <span style={{ opacity: 0.7 }}>🔔</span>
-          </div>
+          <img src="/images/Group 23.png" alt="通知" width={100} height={100} style={{ marginTop: 22 }} />
+            
+        
 
           {/* ✅ 下メニュー（背景は画像の半円 / 中身だけ重ねる） */}
           <div
@@ -199,9 +209,9 @@ export default function HomePage() {
               zIndex: 2,
             }}
           >
-            <NavItem label="ホーム" icon={<HomeIcon />} />
-            <NavItem label="トーク" icon={<ChatIcon />} />
-            <NavItem label="プロフィール" icon={<UserIcon />} />
+            <Link  href="/home"  style={{ transform: "translateY(24px)" }}><img src="/icons/ホームアイコン.png" width={65} height={65} alt="ホーム" /></Link>
+            <Link href="/threads/new"style={{ transform: "translateY(27px)" }}><img src="/icons/トークアイコン.png" width={54} height={54} alt="トーク" /></Link>
+            <Link href="/profile"style={{ transform: "translateY(10px)" }}><img src="/icons/plofile.png" width={82} height={82} alt="プロフィール" /></Link>
           </div>
         </div>
       </div>
@@ -209,59 +219,5 @@ export default function HomePage() {
   );
 }
 
-function NavItem({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <div
-      style={{
-        width: 90,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap:0, // アイコンと文字の距離
-      }}
-    >
-      <div style={{ height: 54, display: "grid", placeItems: "center" }}>{icon}</div>
-      <div
-        style={{
-          fontSize: 14,
-          lineHeight: 1,
-          transform: "translateY(4px)", // 文字だけちょい下げ
-          whiteSpace: "nowrap",
-        }}
-      >
-        {label}
-      </div>
-    </div>
-  );
-}
 
-function HomeIcon() {
-  return (
-    <svg width="54" height="54" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <path d="M10 30 L32 12 L54 30" stroke="white" strokeWidth="4" strokeLinejoin="round" />
-      <path d="M18 28 V52 H46 V28" stroke="white" strokeWidth="4" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
-function ChatIcon() {
-  return (
-    <svg width="54" height="54" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <path
-        d="M18 18 H46 C52 18 56 22 56 28 V36 C56 42 52 46 46 46 H30 L22 52 V46 H18 C12 46 8 42 8 36 V28 C8 22 12 18 18 18 Z"
-        stroke="white"
-        strokeWidth="4"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg width="54" height="54" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <circle cx="32" cy="22" r="10" stroke="white" strokeWidth="4" />
-      <path d="M14 54 C16 42 48 42 50 54" stroke="white" strokeWidth="4" strokeLinecap="round" />
-    </svg>
-  );
-}
