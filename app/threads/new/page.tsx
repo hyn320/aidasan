@@ -69,8 +69,8 @@ export default function NewThreadPage() {
       <div className="w-full max-w-md px-6 flex flex-col items-center relative pt-32">
 
         {/* キャラ */}
-        <div className="-mt-10 mb-6 w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
-          <div className="-mt-12">
+        <div className="-mt-10 mb-6 w-24 h-24 rounded-full bg-white relative overflow-hidden flex items-center justify-center">
+          <div className="flex items-center justify-center w-[80%] h-[80%] -translate-y-[5%]">
             <MediatorDecoration mediatorType="plush" />
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function NewThreadPage() {
             </div>
           )}
 
-          <p className="text-right text-xs text-[#b3b3b3] mt-1">
+          <p className="text-right text-xs text-[#B0A89E] mt-1">
             {text.length}/100
           </p>
         </div>
@@ -112,8 +112,8 @@ export default function NewThreadPage() {
         <button
           onClick={handleSubmit}
           disabled={!text.trim()}
-          className="w-full bg-[#6f8f68] text-white py-4 rounded-full font-semibold
-          disabled:bg-gray-300"
+          className="w-full bg-[#719267] text-white py-4 rounded-full font-semibold
+          disabled:bg-[#d9d9d9]"
         >
           ペアを招待する
         </button>

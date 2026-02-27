@@ -1,3 +1,4 @@
+// components/resolve/MediatorDecoration.tsx
 import Image from "next/image";
 import { MediatorType } from "@/types/mediator-type";
 
@@ -14,7 +15,7 @@ export const MediatorDecoration = ({
       : "/ojisan.svg";
 
   return (
-    <div className="flex justify-center mt-12">
+    <div className="flex justify-center mt-6">
       <img
         src={mediatorImg}
         alt=""
