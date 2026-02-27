@@ -37,7 +37,7 @@ export default function NewThreadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#d9d6c8] flex flex-col items-center">
+    <div className="min-h-screen bg-[#e6e4d7] flex flex-col items-center">
 
       {/* header + wave */}
       <div className="w-full max-w-md relative">
@@ -48,7 +48,7 @@ export default function NewThreadPage() {
           alt="wave"
           width={500}
           height={200}
-          className="absolute top-[-55px] left-0 w-full"
+          className="absolute top-[-45px] left-0 w-full"
         />
 
         {/* header */}
@@ -61,7 +61,7 @@ export default function NewThreadPage() {
               height={24}
             />
           </button>
-          <h1 className="text-lg font-semibold">テーマをつくる</h1>
+          <h1 className="text-xl font-semibold">テーマをつくる</h1>
         </div>
       </div>
 
@@ -69,16 +69,18 @@ export default function NewThreadPage() {
       <div className="w-full max-w-md px-6 flex flex-col items-center relative pt-32">
 
         {/* キャラ */}
-        <div className="-mt-10 mb-6 w-24 h-24 rounded-full bg-white flex items-center justify-center">
-          <MediatorDecoration mediatorType="plush" />
+        <div className="-mt-10 mb-6 w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
+          <div className="-mt-12">
+            <MediatorDecoration mediatorType="plush" />
+          </div>
         </div>
 
         {/* title */}
-        <h1 className={`${yusei.className} text-2xl text-center mt-4`}>
+        <h1 className={`${yusei.className} text-2xl text-center mt-2`}>
           どんなズレを<br/>話したい？
         </h1>
 
-        <p className="text-sm text-[#8c8c8c] mb-7 text-center">
+        <p className="text-sm text-[#6b6b6b] mb-7 text-center mt-7">
           感じていることをそのまま書いてみて。
         </p>
 
@@ -89,11 +91,11 @@ export default function NewThreadPage() {
             onChange={(e) =>
               e.target.value.length <= 100 && setText(e.target.value)
             }
-            className="w-full h-40 rounded-2xl bg-[#eeeeea] p-5 resize-none outline-none"
+            className="w-full h-40 rounded-2xl bg-white p-5 resize-none outline-none"
           />
 
           {text === "" && (
-            <div className="absolute top-5 left-5 text-[#b3b3b3] text-sm leading-7 pointer-events-none">
+            <div className="absolute top-5 left-5 text-[#B0A89E] text-sm leading-7 pointer-events-none">
               例：家事の分担について<br/>
               例：休日の過ごし方が違う
             </div>
