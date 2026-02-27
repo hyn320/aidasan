@@ -7,23 +7,32 @@
 import { useState } from "react";
 import { InviteView } from "./invite";
 import { JoinView } from "./join";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 
 export default function PairPage() {
   const [mode, setMode] = useState<"invite" | "join">("join");
 
+  const router = useRouter();
+
+    const Gohome = () => {
+      router.push("/home");
+    }
+
   return (
+
+  
     <div className="min-h-screen bg-[url('/background3.png')] bg-cover bg-center bg-no-repeat">
       <div className="min-h-screen px-6 pt-12">
 
-        <Link href="/pair" 
+        <button 
+        onClick={Gohome}
         className="flex items-center gap-3 px-4 py-2 ">
             <img src="/Vector.png" alt="ホーム"  width={24}
   height={24}　className="w-6 h-6" />
         
         <span className="text-[17px] font-semibold">ペアになる</span>
-    </Link>
+    </button>
 
 
         {/* タブ切り替え */}
