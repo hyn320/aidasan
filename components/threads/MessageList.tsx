@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { MessageBubble } from "./MessageBubble";
-import { mockMessages } from "@/mock/message";
 import { mockUsers } from "@/mock/user";
+import { Message } from "@/types/message";
+import { MediatorType } from "@/types/mediator-type";
 
 const avatarSrcMap: Record<string, string> = {
   kaeru: "/group10.svg",
@@ -16,24 +17,22 @@ const aidasanSrcMap: Record<string, string> = {
 
 type Props = {
   threadId: string;
-  mediatorType: "plush" | "plant" | "ojisan";
+  mediatorType: MediatorType;
+  currentUserId: string;
+  messages: Message[];
 };
 
-export function MessageList({ threadId, mediatorType }: Props) {
-  const messages = mockMessages
-    .filter((m) => m.threadId === threadId)
-    .sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    );
-
-  const currentUserId = "uA";
-
+export function MessageList({
+  threadId,
+  mediatorType,
+  currentUserId,
+  messages,
+}: Props) {
   return (
     <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-24">
       {messages.map((m) => {
         if (m.kind === "mediator") {
-          const quoted = mockMessages.find((x) => x.id === m.quotedMessageId);
+          const quoted = messages.find((x) => x.id === m.quotedMessageId);
           if (!quoted) return null;
 
           // 引用元の人（A/B）
