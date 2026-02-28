@@ -8,6 +8,7 @@ import { useState } from "react";
 import { InviteView } from "./invite";
 import { JoinView } from "./join";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 
 export default function PairPage() {
