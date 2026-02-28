@@ -19,8 +19,8 @@ export default function ResolvePage() {
   const threadId = params.threadId as string;
 
   // ★ 本当は Auth から取る
-const currentUserId = "a3db4705-3c8f-4b4d-aae0-09500e4dc44e"; //A
-// // const currentUserId = "cd3a3a03-d0de-40b0-96c7-a0e34cbb9ed7"; //B
+//const currentUserId = "a3db4705-3c8f-4b4d-aae0-09500e4dc44e"; //A
+  const currentUserId = "cd3a3a03-d0de-40b0-96c7-a0e34cbb9ed7"; //B
 
   const [thread, setThread] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
