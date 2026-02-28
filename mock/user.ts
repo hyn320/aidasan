@@ -4,13 +4,13 @@ export const mockUsers: UserProfile[] = [
   {
     id: "uA",
     displayName: "Aさん",
-    avatarKey: "bear",
+    avatarKey: "kaeru",
     bio: "ちょっとモヤモヤ中",
   },
   {
     id: "uB",
     displayName: "Bさん",
-    avatarKey: "cat",
+    avatarKey: "hiyoko",
     bio: "話し合いたい",
   },
 ];

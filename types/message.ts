@@ -3,6 +3,7 @@ export type Message = {
   threadId: string; //どのずれか
   kind: "user" | "mediator"; //ユーザーが話しているのか間さんが仲介しているのか
   senderId?: string; //誰が送ったか
-  body: string; //表示するテキスト
+  body?: string; //表示するテキスト
   createdAt: string; //書かれた日時
+  quotedMessageId?: string;
 };
