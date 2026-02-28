@@ -1,3 +1,5 @@
+// types/thread.ts
+
 import { MediatorType } from "./mediator-type";
 
 export type Thread = {
@@ -10,4 +12,7 @@ export type Thread = {
   resolvedB: boolean;
   archived: boolean; //どっちも解決したか
   createdAt: string; //作られた日時
+
+  userAName: string; //ユーザーAの名前
+  userBName: string; //ユーザーBの名前
 };

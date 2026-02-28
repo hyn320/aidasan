@@ -15,7 +15,7 @@ export const MediatorDecoration = ({
       : "/ojisan.svg";
 
   return (
-    <div className="flex justify-center mt-6">
+    <div className="flex justify-center mt-12">
       <img
         src={mediatorImg}
         alt=""
