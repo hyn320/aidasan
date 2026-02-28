@@ -16,25 +16,14 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
 
   const handleSave = async () => {
-  // 今ログインしてるユーザー取得
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const FIXED_USER_ID = "cd3a3a03-d0de-40b0-96c7-a0e34cbb9ed7";
 
-    if (!user) {
-      alert("ログインしてください");
-      return;
-    }
-
-    // usersテーブルに保存（なければ作る、あれば更新）
-    const { error } = await supabase
-      .from("users")
-      .upsert({
-        id: user.id,
-        displayName: name,
-        avatarKey: selectedIcon,
-        bio: bio,
-      });
+    const { error } = await supabase.from("users").upsert({
+      id: FIXED_USER_ID,
+      displayName: name,
+      avatarKey: selectedIcon,
+      bio: bio,
+    });
 
     if (error) {
       console.error(error);
@@ -51,13 +40,13 @@ export default function ProfilePage() {
       <div className="w-full max-w-md px-4 pt-6 pb-4">
         <div className="text-[#1a1a1a] flex items-center gap-2 mb-6">
           <button onClick={() => router.back()}>
-          <Image
-            src="/icons/backButton.png"
-            alt="backButton"
-            width={24}
-            height={24}
-          />
-        </button>
+            <Image
+              src="/icons/backButton.png"
+              alt="backButton"
+              width={24}
+              height={24}
+            />
+          </button>
           <h1 className="text-xl font-semibold">プロフィール設定</h1>
         </div>
 
@@ -66,7 +55,7 @@ export default function ProfilePage() {
 
         <div className="flex justify-center gap-4 mb-4">
           {/* ひよこ */}
-          <div 
+          <div
             onClick={() => setSelectedIcon("hiyoko")}
             className={`w-20 h-20 rounded-2xl overflow-hidden bg-white flex items-center justify-center cursor-pointer
             ${
@@ -93,12 +82,7 @@ export default function ProfilePage() {
                 : "border-2 border-transparent"
             }`}
           >
-            <Image
-              src="/icons/kaeru.png"
-              alt="kaeru"
-              width={80}
-              height={80}
-            />
+            <Image src="/icons/kaeru.png" alt="kaeru" width={80} height={80} />
           </div>
         </div>
 
