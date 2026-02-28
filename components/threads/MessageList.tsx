@@ -72,8 +72,11 @@ export function MessageList({
         if (m.kind == "user") {
           if (m.senderId !== currentUserId) return null;
           const sender = mockUsers.find((u) => u.id === m.senderId);
+          const A_USER_ID = "a3db4705-3c8f-4b4d-aae0-09500e4dc44e";
           const iconSrc =
-            avatarSrcMap[sender?.avatarKey ?? ""] ?? "/group10.svg";
+            m.senderId === A_USER_ID ? "/group10.svg" : "/group14.svg";
+          console.log(m.senderId);
+          console.log(sender?.displayName);
           return (
             <div key={m.id} className="flex justify-end items-center gap-2">
               <MessageBubble variant="outgoing">{m.body}</MessageBubble>
