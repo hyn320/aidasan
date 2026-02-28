@@ -29,20 +29,15 @@ export default function SelectPage() {
           onClick={() => router.push("/home")}
           className="flex items-center gap-3"
         >
-            <Image
-  src="/select/yajirusi.svg"
-  alt="戻る"
-  width={18}
-  height={14}
-/>
-          <span className="text-lg font-semibold">
+          <Image src="/select/yajirusi.svg" alt="戻る" width={18} height={14} />
+          <span className="text-lg font-semibold text-black">
             あいださんを選ぶ
           </span>
         </button>
       </div>
 
       {/* Cards */}
-      <div className="w-full max-w-md px-6 space-y-4 mt-15">
+      <div className="w-full max-w-md px-6 space-y-4 mt-20">
         <SelectCard
           id="plush"
           title="ぬいぐるみ"
