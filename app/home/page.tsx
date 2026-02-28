@@ -40,6 +40,10 @@ export default function HomePage() {
     router.push("/threads/new");
   };
 
+  const GoTalk = () => {
+    router.push("/threads");
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-[#E5E3D6] bg-[url(/rectangle23.svg)] bg-contain bg-no-repeat bg-top ">
       {/* スマホ枠 */}
@@ -265,10 +269,7 @@ export default function HomePage() {
               alt="ホーム"
             />
           </button>
-          <button
-            onClick={GoThreads}
-            style={{ transform: "translateY(273px)" }}
-          >
+          <button onClick={GoTalk} style={{ transform: "translateY(273px)" }}>
             <img
               src="/icons/トークアイコン.png"
               width={54}
