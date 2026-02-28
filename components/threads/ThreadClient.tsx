@@ -42,42 +42,59 @@ export default function ThreadClient({ threadId }: Props) {
 
   // --- 送信：DBにinsert → 返ってきた行(data)を追加 ---
   const handleSend = async (text: string) => {
-    const payload = {
-      threadId,
-      kind: "user" as const,
-      senderId: currentUserId,
-      body: text,
-      // createdAt は DB の default now() に任せる
-      // id も DB の default gen_random_uuid() に任せる
-    };
+    const body = text.trim();
+    if (!body) return;
 
-    const { data, error } = await supabase
+    // 1) user 行を insert（id/createdAt はDBに任せる）
+    const { data: userRow, error: userErr } = await supabase
       .from("messages")
-      .insert(payload)
-      .select("*")
+      .insert({
+        threadId,
+        kind: "user",
+        senderId: currentUserId,
+        body,
+      })
+      .select()
       .single();
 
-    if (error) {
-      console.error("insert error:", error);
+    if (userErr || !userRow) {
+      console.error("insert user error:", userErr);
       return;
     }
-    if (!data) return;
 
-    setMessages((prev) => [...prev, data as Message]);
+    // 2) mediator 行を insert（quotedMessageId に userRow.id）
+    const { data: mediatorRow, error: medErr } = await supabase
+      .from("messages")
+      .insert({
+        threadId,
+        kind: "mediator",
+        senderId: null,
+        body, // ここは間さんの文にしたければ後で変える
+        quotedMessageId: userRow.id,
+      })
+      .select()
+      .single();
+
+    if (medErr || !mediatorRow) {
+      console.error("insert mediator error:", medErr);
+      // userRowだけでも表示は更新したいなら↓は残してOK
+      setMessages((prev) => [...prev, userRow] as Message[]);
+      return;
+    }
+
+    // 3) 画面更新（user + mediator の順で追加）
+    setMessages((prev) => [...prev, userRow, mediatorRow] as Message[]);
   };
-
   // 念のため（DB側で絞ってるけど、UIはこれがあると安全）
   const threadMessages = useMemo(() => {
-    return messages
-      .filter((m) => m.threadId === threadId)
-      .sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      );
-  }, [messages, threadId]);
+    return [...messages].sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+  }, [messages]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F4F0E8] bg-[url(/rectangle23.svg)] bg-contain bg-no-repeat bg-top">
+    <div className="flex flex-col min-h-screen bg-[#E5E3D6] bg-[url(/rectangle23.svg)] bg-contain bg-no-repeat bg-top ">
       <ThreadHeader threadId={threadId} title={thread?.body} />
       <MessageList
         threadId={threadId}
