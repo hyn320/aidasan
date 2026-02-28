@@ -6,6 +6,7 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -14,8 +15,33 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
 
-  const handleSave = () => {
-    // UIフェーズなので保存処理なし
+  const handleSave = async () => {
+  // 今ログインしてるユーザー取得
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("ログインしてください");
+      return;
+    }
+
+    // usersテーブルに保存（なければ作る、あれば更新）
+    const { error } = await supabase
+      .from("users")
+      .upsert({
+        id: user.id,
+        displayName: name,
+        avatarKey: selectedIcon,
+        bio: bio,
+      });
+
+    if (error) {
+      console.error(error);
+      alert("保存に失敗しました");
+      return;
+    }
+
     router.push("/home");
   };
 
