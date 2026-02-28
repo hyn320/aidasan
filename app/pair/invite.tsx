@@ -26,12 +26,7 @@ function generateInviteCodeRaw() {
   return code;
 }
 
-// ABC123 -> ABC-123
-function formatInviteDisplay(raw: string) {
-  const s = raw.replace(/[^A-Z0-9]/g, "");
-  if (s.length !== 6) return s;
-  return `${s.slice(0, 3)}-${s.slice(3)}`;
-}
+
 
 export function InviteView() {
 
@@ -67,44 +62,38 @@ export function InviteView() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const displayCode = useMemo(() => formatInviteDisplay(inviteCode), [inviteCode]);
+  const displayCode = inviteCode;
 
   const createInvite = async () => {
+  setError(null);
+  setLoading(true);
 
+  try {
     const currentUserId = getLocalUserId();
-
-await ensureUserExists(currentUserId);
-    setError(null);
-    setLoading(true);
-
-    
+    await ensureUserExists(currentUserId);
 
     // 重複したら作り直す
     for (let i = 0; i < 10; i++) {
       const code = generateInviteCodeRaw();
 
-      // ① threads を先に作る（/threads/[threadId] 用）
       const { data: thread, error: threadErr } = await supabase
         .from("threads")
-        .insert({
-          body:"",
-          mediatorType:"plant",
-        })
+        .insert({ body: "", mediatorType: "plant" })
         .select("id")
         .single();
 
       if (threadErr || !thread) {
-        setLoading(false);
+        console.log("threadErr:", threadErr);
         setError(threadErr?.message ?? "threadsの作成に失敗しました");
+        setLoading(false);
         return;
       }
 
-      // ② pairs に保存
       const { error: insErr } = await supabase.from("pairs").insert({
         inviteCode: code,
         userAId: currentUserId,
         userBId: null,
-        
+        id: thread.id,
       });
 
       if (!insErr) {
@@ -115,14 +104,18 @@ await ensureUserExists(currentUserId);
       }
 
       console.log("pairs insert error:", insErr);
+      setError(insErr.message); // ★これ追加：失敗理由を画面に出す
+      // continue で次のコードを試す
     }
 
     setLoading(false);
     setError("招待コードの生成に失敗しました（再試行してください）");
-
-    
-  };
-
+  } catch (e: any) {
+    console.log("createInvite crash:", e);
+    setLoading(false);
+    setError(e?.message ?? "予期せぬエラーが起きました");
+  }
+};
   // 画面表示時に自動発行
   useEffect(() => {
     void createInvite();

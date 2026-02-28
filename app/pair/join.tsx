@@ -20,12 +20,7 @@ function normalizeInviteInput(raw: string) {
   return raw.replace(/\s/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
-// 表示：ABC123 -> ABC-123
-function formatInviteDisplay(raw: string) {
-  const s = raw.replace(/[^A-Z0-9]/g, "");
-  if (s.length !== 6) return s;
-  return `${s.slice(0, 3)}-${s.slice(3)}`;
-}
+
 
 export function JoinView() {
   async function ensureUserExists(userId: string) {
@@ -55,7 +50,7 @@ export function JoinView() {
   const [error, setError] = useState<string | null>(null);
 
   const normalized = useMemo(() => normalizeInviteInput(code), [code]); // ABC123
-  const display = useMemo(() => formatInviteDisplay(normalized), [normalized]); // ABC-123
+  
 
   const onJoin = async () => {
 
@@ -71,7 +66,7 @@ await ensureUserExists(currentUserId);
     }
 
     if (!/^[A-Z]{3}\d{3}$/.test(normalized)) {
-      setError("招待コードは「ABC-123」の形式です");
+      setError("招待コードは「ABC123」の形式です");
       return;
     }
 
@@ -126,9 +121,9 @@ await ensureUserExists(currentUserId);
       <p className="text-[12px] text-[#8A8278] mb-3">認証コード</p>
 
       <input
-        value={display}
+        value={code}
         onChange={(e) => setCode(e.target.value)}
-        placeholder="ABC-123"
+        placeholder="ABC123"
         className="w-full rounded-2xl bg-white/80 px-4 py-4 text-center text-lg tracking-widest"
         autoCapitalize="characters"
         autoCorrect="off"
