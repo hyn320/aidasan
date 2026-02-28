@@ -29,11 +29,19 @@ export function MessageList({
   messages,
 }: Props) {
   return (
-    <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-24">
+    <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-24 pt-[50px]">
       {messages.map((m) => {
         if (m.kind === "mediator") {
           const quoted = messages.find((x) => x.id === m.quotedMessageId);
+
+          // 引用元が無いなら出さない（DBがまだ整ってないデータは無視）
           if (!quoted) return null;
+
+          // 引用元が user じゃないなら出さない（変な連鎖を防ぐ）
+          if (quoted.kind !== "user") return null;
+
+          // ✅ 自分が送った user を引用してる間さんは、自分には見せない
+          if (quoted.senderId === currentUserId) return null;
 
           // 引用元の人（A/B）
           const quotedUser = mockUsers.find((u) => u.id === quoted.senderId);
