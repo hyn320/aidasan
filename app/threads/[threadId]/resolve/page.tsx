@@ -25,7 +25,7 @@ export default function ResolvePage() {
   const [loading, setLoading] = useState(true);
 
   // ============================
-  // 🔥 Supabaseから thread を取得
+  // 🔥 Supabase から thread を取得
   // ============================
   useEffect(() => {
     async function fetchThread() {
@@ -47,50 +47,85 @@ export default function ResolvePage() {
     fetchThread();
   }, [threadId]);
 
+  // ============================
+  // 🔥 リアルタイム購読
+  // ============================
+  useEffect(() => {
+    const channel = supabase
+      .channel(`thread-${threadId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "threads",
+          filter: `id=eq.${threadId}`,
+        },
+        (payload) => {
+          setThread(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [threadId]);
+
   if (loading) return <div>Loading...</div>;
   if (!thread) return <div>Thread not found</div>;
 
   // ============================
-  // 🔥 自分が A か B か判定
+  // 🔥 A = カエル（自分） / B = ニワトリ（相手）
   // ============================
-  const meIsA = thread.createdBy === currentUserId;
+  const meIsA = thread.userA === currentUserId;
 
-  // DB の状態
+  const meIcon = meIsA ? "/kaeru.svg" : "/niwatori.svg";
+  const partnerIcon = meIsA ? "/niwatori.svg" : "/kaeru.svg";
+
+  const meName = "あなた";
+  const partnerName = "相手";
+
+  // DB 状態
   const meResolved = meIsA ? thread.resolvedA : thread.resolvedB;
   const partnerResolved = meIsA ? thread.resolvedB : thread.resolvedA;
 
   const isDone = thread.resolvedA && thread.resolvedB;
 
   // ============================
-  // 🔥 解決ボタン処理（DB 更新）
+  // 🔥 解決ボタン（トグル OK）
   // ============================
   const handleResolve = async () => {
     const updateField = meIsA ? "resolvedA" : "resolvedB";
+    const newValue = !meResolved;
 
     const { error } = await supabase
       .from("threads")
-      .update({ [updateField]: true })
+      .update({ [updateField]: newValue })
       .eq("id", threadId);
 
     if (error) {
-      console.error(error);
+      console.error("Update error:", error);
       return;
     }
 
-    // 即時反映
-    const updated = { ...thread, [updateField]: true };
+    const updated = { ...thread, [updateField]: newValue };
 
-    // 両者完了なら archived を更新
+    // 両者完了で archived = true
     if (updated.resolvedA && updated.resolvedB) {
       await supabase.from("threads").update({ archived: true }).eq("id", threadId);
       updated.archived = true;
+    } else {
+      // どちらか解除したら archived = false に戻す
+      await supabase.from("threads").update({ archived: false }).eq("id", threadId);
+      updated.archived = false;
     }
 
     setThread(updated);
   };
 
   // ============================
-  // 🔥 表示レンダリング
+  // 🔥 UI 表示
   // ============================
   return (
     <div className="min-h-screen bg-[url('/background.svg')] bg-top bg-no-repeat bg-cover">
@@ -98,82 +133,53 @@ export default function ResolvePage() {
       <MediatorDecoration mediatorType={thread.mediatorType} />
 
       {/* ========================= */}
-      {/*  完了画面 */}
+      {/* 完了/未完了どちらでもクリックできる */}
       {/* ========================= */}
-      {isDone ? (
-        <>
-          <p className="px-6 mt-4 text-center text-sm text-gray-600">
+
+      <p className="px-6 mt-4 text-center text-sm text-gray-600">
+        {!meResolved && !partnerResolved && <>解決できたと思ったら「解決した」を押してね。</>}
+        {meResolved && !partnerResolved && (
+          <>
+            あなたは「解決した」と伝えたよ。
+            <br />
+            相手の返事を待っているね。
+          </>
+        )}
+        {!meResolved && partnerResolved && (
+          <>
+            相手は「解決した」と伝えたよ。
+            <br />
+            あなたの返事を待っているね。
+          </>
+        )}
+        {isDone && (
+          <>
             ふたりとも、よく話してくれたね。
             <br />
             おめでとう！解決できたよ。
-          </p>
+          </>
+        )}
+      </p>
 
-          <div className="mt-6 space-y-4 px-6">
-            <UserResolveItem
-              icon="/niwatori.svg"
-              name="あなた"
-              status="done"
-              isMe
-            />
+      <div className="mt-6 space-y-4 px-6">
+        {/* 自分（完了画面でも押し直し可能） */}
+        <UserResolveItem
+          icon={meIcon}
+          name={meName}
+          status={meResolved ? "done" : "pending"}
+          onClick={handleResolve}
+          isMe
+        />
 
-            <UserResolveItem
-              icon="/kaeru.svg"
-              name="相手"
-              status="done"
-            />
-          </div>
+        {/* 相手（見た目だけ変わる） */}
+        <UserResolveItem
+          icon={partnerIcon}
+          name={partnerName}
+          status={partnerResolved ? "done" : "pending"}
+        />
+      </div>
 
-          <Done />
-        </>
-      ) : (
-        <>
-          {/* 文章切り替え */}
-          <p className="px-6 mt-4 text-center text-sm text-gray-600">
-            {!meResolved && !partnerResolved && (
-              <>
-                解決できたと思ったら「解決した」を押してね。
-              </>
-            )}
-
-            {meResolved && !partnerResolved && (
-              <>
-                あなたは「解決した」と伝えたよ。
-                <br />
-                相手の返事を待っているね。
-              </>
-            )}
-
-            {!meResolved && partnerResolved && (
-              <>
-                相手は「解決した」と伝えたよ。
-                <br />
-                あなたの返事を待っているね。
-              </>
-            )}
-          </p>
-
-          {/* 自分と相手 */}
-          <div className="mt-6 space-y-4 px-6">
-            <UserResolveItem
-              icon="/niwatori.svg"
-              name="あなた"
-              status={meResolved ? "done" : "pending"}
-              onClick={handleResolve}
-              isMe
-            />
-
-            <UserResolveItem
-              icon="/kaeru.svg"
-              name="相手"
-              status={partnerResolved ? "done" : "pending"}
-            />
-          </div>
-
-          <p className="mt-6 text-center text-xs text-gray-500">
-            両者が「解決した」を押すと完了になります。
-          </p>
-        </>
-      )}
+      {isDone && <Done />}
     </div>
   );
 }
