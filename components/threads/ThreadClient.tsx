@@ -95,7 +95,11 @@ export default function ThreadClient({ threadId }: Props) {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#E5E3D6] bg-[url(/rectangle23.svg)] bg-contain bg-no-repeat bg-top ">
-      <ThreadHeader threadId={threadId} title={thread?.body} />
+      <ThreadHeader
+        threadId={threadId}
+        title={thread?.body}
+        onRefresh={fetchMessages}
+      />
       <MessageList
         threadId={threadId}
         mediatorType={mediatorType}
