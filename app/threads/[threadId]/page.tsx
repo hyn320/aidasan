@@ -4,11 +4,11 @@
 
 import ThreadClient from "@/components/threads/ThreadClient";
 
-export default function ThreadPage({
+export default async function ThreadPage({
   params,
 }: {
-  params: { threadId: string };
+  params: Promise<{ threadId: string }>;
 }) {
-  const threadId = params.threadId;
+  const { threadId } = await params;
   return <ThreadClient threadId={threadId} />;
 }

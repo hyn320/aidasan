@@ -34,6 +34,12 @@ export function MessageList({
         if (m.kind === "mediator") {
           const quoted = messages.find((x) => x.id === m.quotedMessageId);
           if (!quoted) return null;
+          if (quoted.senderId === currentUserId) return null;
+          console.log("mediator", {
+            currentUserId,
+            quotedSenderId: quoted?.senderId,
+            quotedMessageId: m.quotedMessageId,
+          });
 
           // 引用元の人（A/B）
           const quotedUser = mockUsers.find((u) => u.id === quoted.senderId);

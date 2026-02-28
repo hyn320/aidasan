@@ -5,5 +5,5 @@ export type Message = {
   senderId?: string; //誰が送ったか
   body?: string; //表示するテキスト
   createdAt: string; //書かれた日時
-  quotedMessageId?: string;
+  quotedMessageId: string | null;
 };
