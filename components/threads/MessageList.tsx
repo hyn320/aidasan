@@ -29,7 +29,7 @@ export function MessageList({
   messages,
 }: Props) {
   return (
-    <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-24">
+    <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-24 pt-[50px]">
       {messages.map((m) => {
         if (m.kind === "mediator") {
           const quoted = messages.find((x) => x.id === m.quotedMessageId);
