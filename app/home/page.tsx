@@ -6,12 +6,37 @@
 // app/home/page.tsx
 
 // app/home/page.tsx
-import Image from "next/image";
-import React from "react";
-import Link from "next/link";
 
+"use client";
+import Image from "next/image";
+import React, { use } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function HomePage() {
+
+  const router = useRouter();
+
+    const Goselect = () => {
+      router.push("/mediator/select");
+    }
+
+    const GoHome = () => {
+      router.push("/home");
+    }
+
+    const GoThreads = () => {
+      router.push("/threads/page");
+    }
+
+    const GoProfile = () => {
+      router.push("/profile");
+    }
+
+    const Gozure = () => {
+      router.push("/threads/new");
+    }
+
   return (
     <div
       style={{
@@ -59,7 +84,7 @@ export default function HomePage() {
         >
           {/* ヘッダー（右固定） */}
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start" }}>
-            <button
+            <button onClick={Goselect}
               aria-label="menu"
               style={{
                 width: 48,
@@ -123,7 +148,7 @@ export default function HomePage() {
 
           {/* メインカード + 招待 */}
           <div style={{ marginTop: 22, display: "grid", gap: 14, justifyItems: "center"  }}>
-            <Link href="/mediator/select" 
+            <button onClick={Gozure}
               style={{
                 width: 320,
                 height: 150,
@@ -165,12 +190,12 @@ export default function HomePage() {
               </div>
             
             
-            </Link>
+            </button>
              
 
              
 
-           <Link href="/pair"
+           <button onClick={Goselect}
               style={{
               width: 320,
               height: 44,
@@ -184,7 +209,7 @@ export default function HomePage() {
             }}
           >
             あいださんを選ぶ
-          </Link>
+          </button>
           </div>
 
           {/* 通知 */}
@@ -209,9 +234,9 @@ export default function HomePage() {
               zIndex: 2,
             }}
           >
-            <Link  href="/home"  style={{ transform: "translateY(24px)" }}><img src="/icons/ホームアイコン.png" width={65} height={65} alt="ホーム" /></Link>
-            <Link href="/threads/new"style={{ transform: "translateY(27px)" }}><img src="/icons/トークアイコン.png" width={54} height={54} alt="トーク" /></Link>
-            <Link href="/profile"style={{ transform: "translateY(10px)" }}><img src="/icons/plofile.png" width={82} height={82} alt="プロフィール" /></Link>
+            <button onClick={GoHome} style={{ transform: "translateY(24px)" }}><img src="/icons/ホームアイコン.png" width={65} height={65} alt="ホーム" /></button>
+            <button onClick={GoThreads} style={{ transform: "translateY(27px)" }}><img src="/icons/トークアイコン.png" width={54} height={54} alt="トーク" /></button>
+            <button onClick={GoProfile} style={{ transform: "translateY(10px)" }}><img src="/icons/plofile.png" width={82} height={82} alt="プロフィール" /></button>
           </div>
         </div>
       </div>

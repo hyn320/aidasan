@@ -1,56 +1,120 @@
+"use client";
+
 import { useMemo, useState } from "react";
-import { mockPairs } from "@/mock/pairs";
-import type { Pair } from "@/types/pair";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
-export function JoinView() {//参加する側の画面
+/* ===== 端末ユーザーID（inviteと同じ実装）===== */
+function getLocalUserId() {
+  const key = "local_user_id";
+  const stored = localStorage.getItem(key);
+  if (stored) return stored;
+  const newId = crypto.randomUUID();
+  localStorage.setItem(key, newId);
+  return newId;
+}
 
-  const [pairs, setPairs] = useState<Pair[]>(mockPairs);//ペアのデータを書き換える
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
+/* ===== 入力正規化・表示整形 ===== */
+// ABC-123 / abc123 / a b c - 1 2 3 → ABC123
+function normalizeInviteInput(raw: string) {
+  return raw.replace(/\s/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+// 表示：ABC123 -> ABC-123
+function formatInviteDisplay(raw: string) {
+  const s = raw.replace(/[^A-Z0-9]/g, "");
+  if (s.length !== 6) return s;
+  return `${s.slice(0, 3)}-${s.slice(3)}`;
+}
+
+export function JoinView() {
+  async function ensureUserExists(userId: string) {
+  const { data } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!data) {
+    const { error } = await supabase.from("users").insert({
+      id: userId,
+      displayName: "ゲストユーザー",
+      avatarKey: "default",
+      bio: ""
+    });
+
+    if (error) {
+      console.log("user insert error:", error);
+      throw new Error("ユーザー作成失敗");
+    }
+  }
+}
   const router = useRouter();
 
-  const currentUserId = "uB";
-  const normalizedCode = useMemo(() => code.trim().toUpperCase(), [code]);
-//入力を大文字化するのと空白を作らせないようにするためのコードらしい
-  //.trim()は文字列の両端から空白を削除するメソッドで、toUpperCase()は文字列をすべて大文字に変換するメソッド
-  //useMemoは、特定の値が変更(この場合.trimや.toUpper)されたときにのみ関数を再評価（記憶）するため
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const onJoin = () => {//参加ボタンを押したときの処理
-    setError(null);//参加ボタンを押したときに前のエラー表示を消す
+  const normalized = useMemo(() => normalizeInviteInput(code), [code]); // ABC123
+  const display = useMemo(() => formatInviteDisplay(normalized), [normalized]); // ABC-123
 
+  const onJoin = async () => {
 
-    if (!normalizedCode) {
+    const currentUserId = getLocalUserId();
+await ensureUserExists(currentUserId);
+
+    setError(null);
+
+  
+    if (!normalized) {
       setError("招待コードを入力してください");
       return;
     }
 
-    const target = pairs.find((p) => p.inviteCode === normalizedCode);
-    //ペアのリストの中から招待コードが一致するペアを探し，taregtに代入するコード
-    //taget.userAIdは招待コードを作った人のユーザID
+    if (!/^[A-Z]{3}\d{3}$/.test(normalized)) {
+      setError("招待コードは「ABC-123」の形式です");
+      return;
+    }
 
-    if (!target) {
+    // ① pairs から探す
+    const { data: pair, error: findErr } = await supabase
+      .from("pairs")
+      .select("id, inviteCode, userAId, userBId, threadId")
+      .eq("inviteCode", normalized)
+      .single();
+
+    if (findErr || !pair) {
       setError("招待コードが見つかりません");
       return;
     }
 
-    if (target.userBId !== null) {
+    if (pair.userBId !== null) {
       setError("すでにペアになっているルームです");
-      return;//userBIdがnullでない場合はすでにペアが成立している
+      return;
     }
 
-    if (target.userAId === currentUserId) {
+    if (pair.userAId === currentUserId) {
       setError("自分の招待コードには参加できません");
       return;
     }
 
-    setPairs((prev) =>//prevは更新前のペアのリスト．mapでペア配列をひとつずつ作り直す
-      prev.map((p) =>
-        p.id === target.id ? { ...p, userBId: currentUserId } : p
-      )
-    );//ｐはペアの一つ一つを表す変数．
+    // ② 参加者を登録
+    const { error: updErr } = await supabase
+      .from("pairs")
+      .update({ userBId: currentUserId })
+      .eq("id", pair.id);
 
-     router.push("/threads/page"); 
+    if (updErr) {
+      setError(updErr.message);
+      return;
+    }
+
+    // ③ スレッドへ
+    if (pair.threadId) {
+      router.push(`/threads/${pair.threadId}`);
+      return;
+    }
+
+    setError("トークルーム情報がありません");
   };
 
   return (
@@ -62,18 +126,20 @@ export function JoinView() {//参加する側の画面
       <p className="text-[12px] text-[#8A8278] mb-3">認証コード</p>
 
       <input
-      //ユーザーが招待コードを入力
-        value={code}
-        onChange={(e) => setCode(e.target.value)}//ユーザーが1文字入力するたびに、code を更新するユーザーが「M」を打つe.target.value が "M" になるsetCode("M")state更新画面再描画入力欄に "M" が表示
-        placeholder="MA-0000"//ヒント
+        value={display}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder="ABC-123"
         className="w-full rounded-2xl bg-white/80 px-4 py-4 text-center text-lg tracking-widest"
+        autoCapitalize="characters"
+        autoCorrect="off"
+        spellCheck={false}
       />
 
       {error && <p className="text-[#785151] mt-2">{error}</p>}
 
       <button
         onClick={onJoin}
-        className="mt-6 w-full rounded-full bg-[#719267] text-white py-4 text-[13px]"
+        className="mt-6 w-full rounded-full bg-[#719267] text-white py-4 text-[16px] font-semibold"
       >
         参加する
       </button>
