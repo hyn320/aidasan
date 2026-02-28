@@ -4,12 +4,11 @@
 //ホームに戻る押したらホームの画面に戻すように
 //app/threads/[threadId]/resolve/page.tsx
 // app/threads/[threadId]/resolve/page.tsx
-// app/threads/[threadId]/resolve/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { mockThreads } from "@/mock/threads";
+import { supabase } from "@/lib/supabaseClient";
 import { UserResolveItem } from "@/components/resolve/UserResolveItem";
 import { ResolveHeader } from "@/components/resolve/ResolveHeader";
 import { MediatorDecoration } from "@/components/resolve/MediatorDecoration";
@@ -19,26 +18,89 @@ export default function ResolvePage() {
   const params = useParams();
   const threadId = params.threadId as string;
 
-  const thread = mockThreads.find((t) => t.id === threadId);
+  // ★ 本当は Auth から取る
+  const currentUserId = "a3db4705-3c8f-4b4d-aae0-09500e4dc44e";
+
+  const [thread, setThread] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // ============================
+  // 🔥 Supabaseから thread を取得
+  // ============================
+  useEffect(() => {
+    async function fetchThread() {
+      const { data, error } = await supabase
+        .from("threads")
+        .select("*")
+        .eq("id", threadId)
+        .single();
+
+      if (error) {
+        console.error("Supabase Error:", error);
+        return;
+      }
+
+      setThread(data);
+      setLoading(false);
+    }
+
+    fetchThread();
+  }, [threadId]);
+
+  if (loading) return <div>Loading...</div>;
   if (!thread) return <div>Thread not found</div>;
 
-  // 🔥 状態管理（ここが重要）
-  const [meResolved, setMeResolved] = useState(false);
-  const [partnerResolved, setPartnerResolved] = useState(false);
+  // ============================
+  // 🔥 自分が A か B か判定
+  // ============================
+  const meIsA = thread.createdBy === currentUserId;
 
-  // 両方trueなら完了画面
-  const isDone = meResolved && partnerResolved;
+  // DB の状態
+  const meResolved = meIsA ? thread.resolvedA : thread.resolvedB;
+  const partnerResolved = meIsA ? thread.resolvedB : thread.resolvedA;
 
+  const isDone = thread.resolvedA && thread.resolvedB;
+
+  // ============================
+  // 🔥 解決ボタン処理（DB 更新）
+  // ============================
+  const handleResolve = async () => {
+    const updateField = meIsA ? "resolvedA" : "resolvedB";
+
+    const { error } = await supabase
+      .from("threads")
+      .update({ [updateField]: true })
+      .eq("id", threadId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    // 即時反映
+    const updated = { ...thread, [updateField]: true };
+
+    // 両者完了なら archived を更新
+    if (updated.resolvedA && updated.resolvedB) {
+      await supabase.from("threads").update({ archived: true }).eq("id", threadId);
+      updated.archived = true;
+    }
+
+    setThread(updated);
+  };
+
+  // ============================
+  // 🔥 表示レンダリング
+  // ============================
   return (
     <div className="min-h-screen bg-[url('/background.svg')] bg-top bg-no-repeat bg-cover">
-
       <ResolveHeader title="解決を確認" />
       <MediatorDecoration mediatorType={thread.mediatorType} />
 
       {/* ========================= */}
-      {/* ✅ 両方解決した場合 */}
+      {/*  完了画面 */}
       {/* ========================= */}
-      {isDone && (
+      {isDone ? (
         <>
           <p className="px-6 mt-4 text-center text-sm text-gray-600">
             ふたりとも、よく話してくれたね。
@@ -49,35 +111,27 @@ export default function ResolvePage() {
           <div className="mt-6 space-y-4 px-6">
             <UserResolveItem
               icon="/niwatori.svg"
-              name="ゆーてる"
+              name="あなた"
               status="done"
-              onClick={() => setMeResolved(false)} // ← 押し直し可能
               isMe
             />
 
             <UserResolveItem
               icon="/kaeru.svg"
-              name="ゆーや"
+              name="相手"
               status="done"
             />
           </div>
 
           <Done />
         </>
-      )}
-
-      {/* ========================= */}
-      {/* ✅ まだ両方揃ってない場合 */}
-      {/* ========================= */}
-      {!isDone && (
+      ) : (
         <>
           {/* 文章切り替え */}
           <p className="px-6 mt-4 text-center text-sm text-gray-600">
             {!meResolved && !partnerResolved && (
               <>
-                ふたりとも、よく話してくれたね。
-                <br />
-                解決できたと思ったら「解決した」を押してみてね。
+                解決できたと思ったら「解決した」を押してね。
               </>
             )}
 
@@ -98,20 +152,19 @@ export default function ResolvePage() {
             )}
           </p>
 
+          {/* 自分と相手 */}
           <div className="mt-6 space-y-4 px-6">
-            {/* 自分 */}
             <UserResolveItem
               icon="/niwatori.svg"
-              name="ゆーてる"
+              name="あなた"
               status={meResolved ? "done" : "pending"}
-              onClick={() => setMeResolved((prev) => !prev)} // ← トグル！
+              onClick={handleResolve}
               isMe
             />
 
-            {/* 相手 */}
             <UserResolveItem
               icon="/kaeru.svg"
-              name="ゆーや"
+              name="相手"
               status={partnerResolved ? "done" : "pending"}
             />
           </div>
@@ -119,75 +172,8 @@ export default function ResolvePage() {
           <p className="mt-6 text-center text-xs text-gray-500">
             両者が「解決した」を押すと完了になります。
           </p>
-
-          {/* 🔥 デモボタン */}
-          <div className="text-center mt-4 space-x-4">
-            <button
-              onClick={() => setPartnerResolved(true)}
-              className="text-xs text-gray-400 underline"
-            >
-              （デモ）相手が先に押す
-            </button>
-
-            <button
-              onClick={() => {
-                setMeResolved(false);
-                setPartnerResolved(false);
-              }}
-              className="text-xs text-gray-400 underline"
-            >
-              リセット
-            </button>
-          </div>
         </>
       )}
     </div>
   );
 }
-/*'use client';
-
-import { mockThreads } from "@/mock/threads";
-import { UserResolveItem } from "@/components/resolve/UserResolveItem";
-import { ResolveHeader } from "@/components/resolve/ResolveHeader";
-import { MediatorDecoration } from "@/components/resolve/MediatorDecoration";
-
-export default function ResolvePage({ params }: { params: { threadId: string } }) {
-  const thread = mockThreads.find((t) => t.id === params.threadId);
-
-  return (
-    <div className="min-h-screen bg-[url('/background.svg')] bg-top bg-no-repeat bg-cover">
-
-      <ResolveHeader title="解決を確認" />
-
-      <MediatorDecoration mediatorType={thread?.mediatorType ?? "plush"} />
-
-      <p className="px-6 mt-4 text-center text-sm text-gray-600">
-        ふたりとも、よく話してくれたね。
-        <br />
-        解決できたと思ったら「解決した」を押してみてね。
-      </p>
-
-      <div className="mt-6 space-y-4 px-6">
-        <UserResolveItem
-          icon="/niwatori.svg"
-          name="ゆーてる"
-          status="pending"
-          actionHref={`/threads/${thread?.id}/resolve/waiting`}
-        />
-
-        <UserResolveItem
-          icon="/kaeru.svg"
-          name="ゆーや"
-          status="pending"
-          actionHref={`/threads/${thread?.id}/resolve/partner-waiting`}
-          disabled
-        />
-      </div>
-
-      <p className="mt-6 text-center text-xs text-gray-500">
-        両者が「解決した」を押すと完了になります。
-      </p>
-
-    </div>
-  );
-}*/
