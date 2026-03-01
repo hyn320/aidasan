@@ -261,7 +261,7 @@ export default function HomePage() {
             zIndex: 2,
           }}
         >
-          <button onClick={GoHome} style={{ transform: "translateY(270px)" }}>
+          <button onClick={GoHome} style={{ transform: "translateY(173px)" }}>
             <img
               src="/icons/ホームアイコン.png"
               width={65}
@@ -269,7 +269,7 @@ export default function HomePage() {
               alt="ホーム"
             />
           </button>
-          <button onClick={GoTalk} style={{ transform: "translateY(273px)" }}>
+          <button onClick={GoTalk} style={{ transform: "translateY(177px)" }}>
             <img
               src="/icons/トークアイコン.png"
               width={54}
@@ -279,7 +279,7 @@ export default function HomePage() {
           </button>
           <button
             onClick={GoProfile}
-            style={{ transform: "translateY(256px)" }}
+            style={{ transform: "translateY(160px)" }}
           >
             <img
               src="/icons/plofile.png"
