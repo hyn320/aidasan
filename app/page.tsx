@@ -15,7 +15,6 @@ export default function Home() {
   return (
     <div className="flex justify-center w-full min-h-screen bg-[#d9deca]">
       <div className="relative w-full max-w-[390px] h-screen overflow-hidden bg-[#d9deca]">
-
         {/* 背景 */}
         <Image
           src="/bgForStart.svg"
@@ -81,7 +80,7 @@ export default function Home() {
 
         {/* はじめるボタン */}
         <button
-          onClick={() => router.push("/auth/page")}
+          onClick={() => router.push("/auth")}
           className="absolute bottom-[105px] left-1/2 -translate-x-1/2 z-10 w-[260px] rounded-full bg-[#719167] py-4 text-white text-lg shadow-md active:scale-95 transition"
         >
           はじめる
