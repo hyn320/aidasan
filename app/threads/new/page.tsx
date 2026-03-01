@@ -30,6 +30,8 @@ export default function NewThreadPage() {
       resolvedB: false,
       archived: false,
       createdAt: new Date().toISOString(),
+      userAName: "A",
+      userBName: "B",
     };
 
     console.log(dummy);
@@ -38,10 +40,8 @@ export default function NewThreadPage() {
 
   return (
     <div className="min-h-screen bg-[#e6e4d7] flex flex-col items-center">
-
       {/* header + wave */}
       <div className="w-full max-w-md relative">
-
         {/* wave */}
         <Image
           src="/icons/wave.svg"
@@ -67,7 +67,6 @@ export default function NewThreadPage() {
 
       {/* body */}
       <div className="w-full max-w-md px-6 flex flex-col items-center relative pt-32">
-
         {/* キャラ */}
         <div className="-mt-10 mb-6 w-24 h-24 rounded-full bg-white relative overflow-hidden flex items-center justify-center">
           <div className="flex items-center justify-center w-[80%] h-[80%] -translate-y-[5%]">
@@ -77,7 +76,9 @@ export default function NewThreadPage() {
 
         {/* title */}
         <h1 className={`${yusei.className} text-2xl text-center mt-2`}>
-          どんなズレを<br/>話したい？
+          どんなズレを
+          <br />
+          話したい？
         </h1>
 
         <p className="text-sm text-[#6b6b6b] mb-7 text-center mt-7">
@@ -96,7 +97,8 @@ export default function NewThreadPage() {
 
           {text === "" && (
             <div className="absolute top-5 left-5 text-[#B0A89E] text-sm leading-7 pointer-events-none">
-              例：家事の分担について<br/>
+              例：家事の分担について
+              <br />
               例：休日の過ごし方が違う
             </div>
           )}
