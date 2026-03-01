@@ -11,7 +11,7 @@ export function ThreadHeader({ threadId, title, onRefresh }: Props) {
   console.log("ThreadHeader threadId =", threadId);
   return (
     <div className=" h-28 flex items-center px-4 justify-between pt-[25px]">
-      <Link href="/home">
+      <Link href="/threads" >
         <Image src="/Vector.svg" width={18} height={14} alt="arrow" />
       </Link>
       <div className="text-black font-bold">家事の分担</div>
