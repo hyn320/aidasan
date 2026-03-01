@@ -19,7 +19,7 @@ export default function ResolvePage() {
   const threadId = params.threadId as string;
 
   // ★ 本当は Auth から取る
-//const currentUserId = "a3db4705-3c8f-4b4d-aae0-09500e4dc44e"; //A
+  // const currentUserId = "a3db4705-3c8f-4b4d-aae0-09500e4dc44e"; //A
   const currentUserId = "cd3a3a03-d0de-40b0-96c7-a0e34cbb9ed7"; //B
 
   const [thread, setThread] = useState<any | null>(null);
@@ -32,7 +32,15 @@ export default function ResolvePage() {
     async function fetchThread() {
       const { data, error } = await supabase
         .from("threads")
-        .select("*")
+        .select(
+          `
+    *,
+    pair:pairs!inner(
+      userAId,
+      userBId
+    )
+  `,
+        )
         .eq("id", threadId)
         .single();
 
@@ -64,7 +72,7 @@ export default function ResolvePage() {
         },
         (payload) => {
           setThread(payload.new);
-        }
+        },
       )
       .subscribe();
 
@@ -79,8 +87,12 @@ export default function ResolvePage() {
   // ============================
   // 🔥 A = カエル（自分） / B = ニワトリ（相手）
   // ============================
-  const meIsA = thread.userA === currentUserId;
+  const meIsA = thread?.pair?.userAId === currentUserId;
 
+  console.log("userA:", thread.userA);
+  console.log("userB:", thread.userB);
+  console.log("currentUserId:", currentUserId);
+  console.log("meIsA:", meIsA);
   const meIcon = meIsA ? "/kaeru.svg" : "/niwatori.svg";
   const partnerIcon = meIsA ? "/niwatori.svg" : "/kaeru.svg";
 
@@ -114,11 +126,17 @@ export default function ResolvePage() {
 
     // 両者完了で archived = true
     if (updated.resolvedA && updated.resolvedB) {
-      await supabase.from("threads").update({ archived: true }).eq("id", threadId);
+      await supabase
+        .from("threads")
+        .update({ archived: true })
+        .eq("id", threadId);
       updated.archived = true;
     } else {
       // どちらか解除したら archived = false に戻す
-      await supabase.from("threads").update({ archived: false }).eq("id", threadId);
+      await supabase
+        .from("threads")
+        .update({ archived: false })
+        .eq("id", threadId);
       updated.archived = false;
     }
 
@@ -138,7 +156,9 @@ export default function ResolvePage() {
       {/* ========================= */}
 
       <p className="px-6 mt-4 text-center text-sm text-gray-600">
-        {!meResolved && !partnerResolved && <>解決できたと思ったら「解決した」を押してね。</>}
+        {!meResolved && !partnerResolved && (
+          <>解決できたと思ったら「解決した」を押してね。</>
+        )}
         {meResolved && !partnerResolved && (
           <>
             あなたは「解決した」と伝えたよ。
