@@ -152,7 +152,7 @@ export default function HomePage() {
               background: "rgba(255,255,255,0.88)",
               borderRadius: 999,
               padding: "12px 16px",
-              fontSize: 18,
+              fontSize: 15,
               lineHeight: 1.25,
               color: "#5b4a3a",
             }}
