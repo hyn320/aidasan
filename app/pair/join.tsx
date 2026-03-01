@@ -73,7 +73,7 @@ await ensureUserExists(currentUserId);
     // ① pairs から探す
     const { data: pair, error: findErr } = await supabase
       .from("pairs")
-      .select("id, inviteCode, userAId, userBId, threadId")
+      .select("id, inviteCode, userAId, userBId")
       .eq("inviteCode", normalized)
       .single();
 
@@ -93,24 +93,38 @@ await ensureUserExists(currentUserId);
     }
 
     // ② 参加者を登録
-    const { error: updErr } = await supabase
-      .from("pairs")
-      .update({ userBId: currentUserId })
-      .eq("id", pair.id);
+    // ② 参加者を登録
+  const { error: updErr } = await supabase
+  .from("pairs")
+  .update({ userBId: currentUserId })
+  .eq("id", pair.id);
 
-    if (updErr) {
-      setError(updErr.message);
-      return;
-    }
+  if (updErr) {
+  setError(updErr.message);
+  return;
+  }
 
-    // ③ スレッドへ
-    if (pair.threadId) {
-      router.push(`/threads/${pair.threadId}`);
-      return;
-    }
+  // ★★★ここから追加★★★
+  // ペア成立 → スレッド作成
+  const { data: thread, error: threadErr } = await supabase
+    .from("threads")
+    .insert({
+      pairId: pair.id,
+      body: "",
+      mediatorType: "plant",
+    })
+    .select("id")
+    .single();
 
-    setError("トークルーム情報がありません");
-  };
+  if (threadErr || !thread) {
+    setError("トークルーム作成に失敗しました");
+    return;
+  }
+
+    // トーク画面へ
+    router.push(`/threads/${thread.id}`);
+
+   };
 
   return (
     <div className="mt-7">

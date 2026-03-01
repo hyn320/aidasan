@@ -65,64 +65,79 @@ export function InviteView() {
   const displayCode = inviteCode;
 
   const createInvite = async () => {
-  setError(null);
+  const currentUserId = getLocalUserId();
+  await ensureUserExists(currentUserId);
+
+  
   setLoading(true);
+  setError(null);
 
-  try {
-    const currentUserId = getLocalUserId();
-    await ensureUserExists(currentUserId);
+  for (let i = 0; i < 10; i++) {
+    const code = generateInviteCodeRaw();
 
-    // 重複したら作り直す
-    for (let i = 0; i < 10; i++) {
-      const code = generateInviteCodeRaw();
+    const { error } = await supabase.from("pairs").insert({
+      inviteCode: code,
+      userAId: currentUserId,
+      userBId: null,
+    });
 
-      const { data: thread, error: threadErr } = await supabase
-        .from("threads")
-        .insert({ body: "", mediatorType: "plant" })
-        .select("id")
-        .single();
-
-      if (threadErr || !thread) {
-        console.log("threadErr:", threadErr);
-        setError(threadErr?.message ?? "threadsの作成に失敗しました");
-        setLoading(false);
-        return;
-      }
-
-      const { error: insErr } = await supabase.from("pairs").insert({
-        inviteCode: code,
-        userAId: currentUserId,
-        userBId: null,
-        id: thread.id,
-      });
-
-      if (!insErr) {
-        setInviteCode(code);
-        setThreadId(thread.id);
-        setLoading(false);
-        return;
-      }
-
-      console.log("pairs insert error:", insErr);
-      setError(insErr.message); // ★これ追加：失敗理由を画面に出す
-      // continue で次のコードを試す
+    if (!error) {
+      setInviteCode(code);
+      setLoading(false);
+      return;
     }
-
-    setLoading(false);
-    setError("招待コードの生成に失敗しました（再試行してください）");
-  } catch (e: any) {
-    console.log("createInvite crash:", e);
-    setLoading(false);
-    setError(e?.message ?? "予期せぬエラーが起きました");
   }
+
+  setLoading(false);
+  setError("招待コードの生成に失敗しました");
 };
+
+
   // 画面表示時に自動発行
   useEffect(() => {
     void createInvite();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
- 
+ // 相手が参加したか定期チェック（ポーリング）
+useEffect(() => {
+  if (!inviteCode) return;
+
+  const currentUserId = getLocalUserId();
+
+  const timer = setInterval(async () => {
+
+    // ① 自分が作ったペアを探す
+    const { data: pair, error: pairErr } = await supabase
+      .from("pairs")
+      .select("id, userBId")
+      .eq("inviteCode", inviteCode)
+      .eq("userAId", currentUserId)
+      .maybeSingle();
+
+    if (pairErr || !pair) return;
+
+    // ② 相手がまだ来てない
+    if (!pair.userBId) return;
+
+    // ③ 対応するトークルームを探す
+    const { data: thread, error: threadErr } = await supabase
+      .from("threads")
+      .select("id")
+      .eq("pairId", pair.id)
+      .maybeSingle();
+
+    if (threadErr || !thread) return;
+
+    // ④ 見つかったら遷移！
+    clearInterval(timer);
+    router.push(`/threads/${thread.id}`);
+
+  }, 1500); // 1.5秒ごとに確認
+
+  return () => clearInterval(timer);
+}, [inviteCode, router]);
+
 
   const goThread = () => {
     if (!threadId) {
